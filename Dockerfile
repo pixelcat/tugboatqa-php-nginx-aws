@@ -1,4 +1,4 @@
-FROM tugboatqa/php:7.2.9-fpm-stretch
+FROM tugboatqa/php:7.2.12-fpm-stretch
 
 ENV NGINX_VERSION 1.15.4-1~stretch
 ENV NJS_VERSION   1.15.4.0.2.4-1~stretch
@@ -101,13 +101,14 @@ RUN set -xe && \
 RUN set -xe && \
     cd /usr/src && \
     apt-get update && \
-    apt-get install -y libxml2 libxml2-dev libpng16-16 libpng-dev libjpeg62-turbo libjpeg62-turbo-dev && \
+    apt-get install -y libxml2 libxml2-dev libpng16-16 libpng-dev libjpeg62-turbo libjpeg62-turbo-dev zlib1g-dev && \
     docker-php-source extract && \
     /usr/local/bin/docker-php-ext-install mysqli && \
     /usr/local/bin/docker-php-ext-install gd && \
     /usr/local/bin/docker-php-ext-install soap && \
     /usr/local/bin/docker-php-ext-install zip && \
-    /usr/local/bin/docker-php-ext-enable mysqli gd soap zip && \
+    /usr/local/bin/docker-php-ext-install bcmath && \
+    /usr/local/bin/docker-php-ext-enable mysqli gd soap zip bcmath && \
     apt-get remove -y libxml2-dev libjpeg62-turbo-dev libpng-dev && \
     docker-php-source delete && \
     apt-get clean all
