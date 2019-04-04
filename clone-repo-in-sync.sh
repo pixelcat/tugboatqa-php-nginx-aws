@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
 REPO_NAME=${1}
-PROJECT_BASEDIR=/var/lib/tugboat-${REPO_NAME}
+PROJECT_BASEDIR=/var/lib/tugboat
 
 # check out patient-api project.
 cd /var/lib
 echo "Checking out project ${REPO_NAME} with branch 'master'."
-git clone git@bitbucket.org:speareducation/${REPO_NAME} tugboat-${REPO_NAME}
+git clone git@bitbucket.org:speareducation/${REPO_NAME} ${PROJECT_BASEDIR}
 cd ${PROJECT_BASEDIR}
 
 BRANCH_AVAILABLE=$(git branch -r | grep "${TUGBOAT_BITBUCKET_SOURCE}")

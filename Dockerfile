@@ -1,26 +1,16 @@
-FROM tugboatqa/php:7.2.9-fpm-stretch
+FROM tugboatqa/php:7.2.16-fpm-stretch
 
 ENV NGINX_VERSION 1.15.4-1~stretch
 ENV NJS_VERSION   1.15.4.0.2.4-1~stretch
 
-RUN set -x \
-	&& apt-get update \
-	&& apt-get install --no-install-recommends --no-install-suggests -y gnupg1 apt-transport-https ca-certificates \
-	&& \
-	NGINX_GPGKEY=573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62; \
-	found=''; \
-	for server in \
-		ha.pool.sks-keyservers.net \
-		hkp://keyserver.ubuntu.com:80 \
-		hkp://p80.pool.sks-keyservers.net:80 \
-		pgp.mit.edu \
-	; do \
-		echo "Fetching GPG key $NGINX_GPGKEY from $server"; \
-		apt-key adv --keyserver "$server" --keyserver-options timeout=10 --recv-keys "$NGINX_GPGKEY" && found=yes && break; \
-	done; \
-	test -z "$found" && echo >&2 "error: failed to fetch GPG key $NGINX_GPGKEY" && exit 1; \
-	apt-get remove --purge --auto-remove -y gnupg1 && rm -rf /var/lib/apt/lists/* \
-	&& dpkgArch="$(dpkg --print-architecture)" \
+RUN set -xe && \
+  apt-get update && \
+  apt-get install --no-install-recommends --no-install-suggests -y gnupg1 apt-transport-https ca-certificates && \
+  curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
+  echo "deb http://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
+  apt-get update && \
+  curl -fsSL https://nginx.org/keys/nginx_signing.key | sudo apt-key add - && \
+  dpkgArch="$(dpkg --print-architecture)" \
 	&& nginxPackages=" \
 		nginx=${NGINX_VERSION} \
 		nginx-module-xslt=${NGINX_VERSION} \
@@ -107,7 +97,9 @@ RUN set -xe && \
     /usr/local/bin/docker-php-ext-install gd && \
     /usr/local/bin/docker-php-ext-install soap && \
     /usr/local/bin/docker-php-ext-install zip && \
-    /usr/local/bin/docker-php-ext-enable mysqli gd soap zip && \
+    /usr/local/bin/docker-php-ext-install simplexml && \
+
+    /usr/local/bin/docker-php-ext-enable mysqli gd soap zip simplexml && \
     apt-get remove -y libxml2-dev libjpeg62-turbo-dev libpng-dev && \
     docker-php-source delete && \
     apt-get clean all
@@ -134,11 +126,54 @@ RUN set -xe && \
     mkdir -p composer && \
     cd composer && \
     php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
-    php -r "if (hash_file('SHA384', 'composer-setup.php') === '93b54496392c062774670ac18b134c3b3a95e5a5e5c8f1a9f115f203b75bf9a129d5daa8ba6a13e2cc8a1da0806388a8') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" && \
-    php composer-setup.php && \
-    php -r "unlink('composer-setup.php');" && \
+    EXPECTED_SIGNATURE="$(wget -q -O - https://composer.github.io/installer.sig)" \
+    ACTUAL_SIGNATURE="$(php -r "echo hash_file('sha384', 'composer-setup.php');")" \
+    test "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" && >&2 echo 'ERROR: Invalid installer signature' && rm composer-setup.php && exit 1; \
+    php composer-setup.php --quiet \
+    RESULT=$? \
+    rm composer-setup.php && \
     cd / && \
-    rm -rf /tmp/composer
+    rm -rf /tmp/composer && \
+    apt-get clean all
+
+# Install deps required to run the site.
+RUN set -xe && \
+    apt install -y jq libpng-dev apt-transport-https python-pip jq groff yarn
+
+RUN set -xe && \
+    pip install awscli --upgrade
+
+# Install the apt ssl transport.
+# Set up deb repo for yarn.
+# Update the apt repo again with ssl enabled.
+RUN set -xe && \
+  apt-get update && \
+  apt-get install -y apt-transport-https && \
+  curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
+  echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
+  apt-get update && \
+  curl https://raw.githubusercontent.com/creationix/nvm/v0.24.0/install.sh | bash && \
+  . /root/.bashrc && \
+  echo "Installing node v8.12.0" && \
+  nvm install v8.12.0 && \
+  echo "Installing yarn." && \
+  apt install -y yarn --no-install-recommends && \
+  echo "Installing Gulp." && \
+  yarn global add gulp && \
+  echo "Installing gulp-cli." && \
+  yarn global add gulp-cli && \
+  echo "Installing bower." && \
+  yarn global add bower
+
+COPY tugboat-tools /usr/local
+
+RUN set -xe && \
+    cd /usr/local && \
+    git clone https://github.com/pixelcat/aws-register-host.git
+
+# Clean up local apt repo.
+RUN set -xe && \
+    apt-get clean all
 
 EXPOSE 80
 
