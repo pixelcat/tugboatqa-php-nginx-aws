@@ -1,2 +1,4 @@
 /tugboat-tools
 .idea
+/tugboat-sqs-notifier
+/tugboat-event-notifier

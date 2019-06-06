@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:experimental
 FROM tugboatqa/php:7.2.16-fpm-stretch
 
 ENV NGINX_VERSION 1.15.4-1~stretch
@@ -165,15 +166,36 @@ RUN set -xe && \
   echo "Installing bower." && \
   yarn global add bower
 
-COPY tugboat-tools /usr/local
+COPY patches/ptyget.makefile.patch /
+
+COPY tugboat-tools /usr/local/tugboat-tools
 
 RUN set -xe && \
+    chmod -R a+x /etc/service
+
+# Install register host.
+RUN set -xe && \
     cd /usr/local && \
-    git clone https://github.com/pixelcat/aws-register-host.git
+    git clone https://github.com/pixelcat/aws-register-host.git aws-register-host && \
+    cd /usr/local/aws-register-host && \
+    composer install
+
+# Add tugboat CLI binary
+RUN set -xe && \
+    mkdir -p /tmp && \
+    wget -q -O/tmp/tugboat.tar.gz https://dashboard2.tugboat.qa/cli/linux/tugboat.tar.gz && \
+    cd /tmp && \
+    tar -xvzf tugboat.tar.gz && \
+    ls -l /tmp && \
+    cp /tmp/tugboat / && \
+    chmod a+x /tugboat && \
+    rm /tmp/tugboat && \
+    rm /tmp/tugboat.tar.gz
 
 # Clean up local apt repo.
 RUN set -xe && \
-    apt-get clean all
+    apt-get clean all && \
+    rm -rf /var/lib/apt/lists/*
 
 EXPOSE 80
 

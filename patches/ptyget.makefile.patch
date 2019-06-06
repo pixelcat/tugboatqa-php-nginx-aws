@@ -1,0 +1,82 @@
+--- Makefile	2019-04-08 08:16:34.787604621 -0700
++++ ../Makefile	2019-04-08 08:16:27.171034084 -0700
+@@ -21,7 +21,6 @@
+
+ background.0: \
+ background.1
+-	nroff -man background.1 > background.0
+
+ background.o: \
+ compile background.c strerr.h background.c error.h background.c
+@@ -82,7 +81,6 @@
+
+ excloff.0: \
+ excloff.1
+-	nroff -man excloff.1 > excloff.0
+
+ excloff.o: \
+ compile excloff.c excloff.c excloff.c
+@@ -94,7 +92,6 @@
+
+ exclon.0: \
+ exclon.1
+-	nroff -man exclon.1 > exclon.0
+
+ exclon.o: \
+ compile exclon.c exclon.c exclon.c
+@@ -280,7 +277,6 @@
+
+ nobuf.0: \
+ nobuf.1
+-	nroff -man nobuf.1 > nobuf.0
+
+ open_append.o: \
+ compile open_append.c open_append.c open_append.c open.h \
+@@ -321,7 +317,6 @@
+
+ ptybandage.0: \
+ ptybandage.1
+-	nroff -man ptybandage.1 > ptybandage.0
+
+ ptyget: \
+ load ptyget.o fdcopy.o libenv.a liballoc.a libstrerr.a libsubstdio.a \
+@@ -345,7 +340,6 @@
+
+ ptyget.0: \
+ ptyget.8
+-	nroff -man ptyget.8 > ptyget.0
+
+ ptyget.o: \
+ compile ptyget.c ptyget.c ptyget.c ptyget.c ptyget.c ptyget.c env.h \
+@@ -363,7 +357,6 @@
+
+ ptyio.0: \
+ ptyio.8
+-	nroff -man ptyio.8 > ptyio.0
+
+ ptyio.o: \
+ compile ptyio.c wait.h ptyio.c fork.h ptyio.c select.h select.h \
+@@ -380,7 +373,6 @@
+
+ ptyrun.0: \
+ ptyrun.1
+-	nroff -man ptyrun.1 > ptyrun.0
+
+ ptyspawn: \
+ load ptyspawn.o libwait.a libsig.a libenv.a libstrerr.a libgetopt.a \
+@@ -390,7 +382,6 @@
+
+ ptyspawn.0: \
+ ptyspawn.8
+-	nroff -man ptyspawn.8 > ptyspawn.0
+
+ ptyspawn.o: \
+ compile ptyspawn.c ptyspawn.c ptyspawn.c ptyspawn.c ptyspawn.c \
+@@ -600,7 +591,6 @@
+
+ ttydetach.0: \
+ ttydetach.1
+-	nroff -man ttydetach.1 > ttydetach.0
+
+ ttydetach.o: \
+ compile ttydetach.c env.h ttydetach.c strerr.h ttydetach.c

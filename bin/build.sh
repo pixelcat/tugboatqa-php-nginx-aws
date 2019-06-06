@@ -8,5 +8,7 @@ else
   popd 2>&1 > /dev/null
 fi
 
+export DOCKER_BUILDKIT=1
+
 docker pull tugboatqa/php:7.2.16-fpm-stretch
 docker build -t spear/tugboatqa-php-nginx:1.0-7.2.16-fpm-stretch-1 .
