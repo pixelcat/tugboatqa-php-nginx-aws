@@ -100,7 +100,8 @@ RUN set -xe && \
     /usr/local/bin/docker-php-ext-install zip && \
     /usr/local/bin/docker-php-ext-install simplexml && \
     /usr/local/bin/docker-php-ext-install bcmath && \
-    /usr/local/bin/docker-php-ext-enable mysqli gd soap zip bcmath simplexml && \
+    /usr/local/bin/docker-php-ext-install exif && \
+    /usr/local/bin/docker-php-ext-enable mysqli exif gd soap zip bcmath simplexml && \
     apt-get remove -y libxml2-dev libjpeg62-turbo-dev libpng-dev && \
     docker-php-source delete && \
     apt-get clean all
